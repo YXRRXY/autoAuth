@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/YXRRXY/autoAuth/internal/api/handlers"
-	"github.com/YXRRXY/autoAuth/internal/middleware"
+	"github.com/YXRRXY/autoAuth/backend/internal/api/handlers"
+	"github.com/YXRRXY/autoAuth/backend/internal/api/middleware"
 	"github.com/cloudwego/hertz/pkg/app/server"
 )
 

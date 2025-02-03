@@ -1,10 +1,11 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
-	"github.com/YXRRXY/autoAuth/pkg/utils"
+	"github.com/YXRRXY/autoAuth/backend/pkg/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -31,8 +32,19 @@ type Config struct {
 func LoadConfig() (*Config, error) {
 	cfg := &Config{}
 
+	// 获取环境变量中的配置文件路径
+	configPath := os.Getenv("CONFIG_PATH")
+	if configPath == "" {
+		// 默认配置文件路径
+		configPath = "../../configs/config.yaml"
+	}
+
+	// 检查文件是否存在
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("配置文件不存在: %s", configPath)
+	}
+
 	// 读取配置文件
-	configPath := "../../configs/config.yaml"
 	if err := loadYamlConfig(configPath, cfg); err != nil {
 		return nil, err
 	}
@@ -41,22 +53,47 @@ func LoadConfig() (*Config, error) {
 	if cfg.JWT.Secret == "" {
 		secret, err := utils.GenerateRandomSecret()
 		if err != nil {
-			return nil, fmt.Errorf("generate secret failed: %v", err)
+			return nil, fmt.Errorf("生成密钥失败: %v", err)
 		}
 		cfg.JWT.Secret = secret
 
 		// 将更新后的配置写回文件
 		newData, err := yaml.Marshal(cfg)
 		if err != nil {
-			return nil, fmt.Errorf("marshal config error: %v", err)
+			return nil, fmt.Errorf("序列化配置失败: %v", err)
 		}
 
 		if err := os.WriteFile(configPath, newData, 0644); err != nil {
-			return nil, fmt.Errorf("update config file error: %v", err)
+			return nil, fmt.Errorf("更新配置文件失败: %v", err)
 		}
 	}
 
+	// 验证配置
+	if err := cfg.validate(); err != nil {
+		return nil, fmt.Errorf("配置验证失败: %v", err)
+	}
+
 	return cfg, nil
+}
+
+// validate 验证配置
+func (c *Config) validate() error {
+	if c.Database.Username == "" {
+		return errors.New("数据库用户名不能为空")
+	}
+	if c.Database.Host == "" {
+		return errors.New("数据库主机不能为空")
+	}
+	if c.Database.Port == 0 {
+		c.Database.Port = 3306 // 使用默认端口
+	}
+	if c.Database.DBName == "" {
+		return errors.New("数据库名不能为空")
+	}
+	if c.Server.Port == 0 {
+		c.Server.Port = 8080 // 使用默认端口
+	}
+	return nil
 }
 
 // GetDSN 获取数据库连接字符串

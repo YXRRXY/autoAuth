@@ -1,4 +1,4 @@
-module github.com/YXRRXY/autoAuth
+module github.com/YXRRXY/autoAuth/backend
 
 go 1.23.4
 

@@ -3,8 +3,7 @@ package handlers
 import (
 	"context"
 
-	"github.com/YXRRXY/autoAuth/internal/model"
-	"github.com/YXRRXY/autoAuth/internal/service"
+	"github.com/YXRRXY/autoAuth/backend/internal/service"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
@@ -12,17 +11,6 @@ import (
 type LoginRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
-}
-
-/*type RegisterRequest struct {
-	Username string `json:"username" binding:"required,min=3,max=50"`
-	Password string `json:"password" binding:"required,min=6,max=32"`
-	Email    string `json:"email" binding:"required,email"`
-}*/
-
-type AuthResponse struct {
-	Token string      `json:"token"`
-	User  *model.User `json:"user"`
 }
 
 type AuthHandler struct {

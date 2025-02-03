@@ -1,10 +1,10 @@
-package repository
+package query
 
 import (
 	"context"
 	"time"
 
-	"github.com/YXRRXY/autoAuth/internal/model"
+	"github.com/YXRRXY/autoAuth/backend/internal/dal/model"
 	"gorm.io/gorm"
 )
 

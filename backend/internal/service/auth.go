@@ -3,19 +3,19 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 
-	"github.com/YXRRXY/autoAuth/internal/model"
-	"github.com/YXRRXY/autoAuth/internal/repository"
-	"github.com/YXRRXY/autoAuth/pkg/utils"
+	"github.com/YXRRXY/autoAuth/backend/internal/dal/model"
+	"github.com/YXRRXY/autoAuth/backend/pkg/utils"
 )
 
 type AuthService struct {
-	userRepo   *repository.UserRepository
+	userRepo   UserRepository
 	jwtHandler *utils.JWTHandler
 }
 
-func NewAuthService(userRepo *repository.UserRepository, jwtHandler *utils.JWTHandler) *AuthService {
+func NewAuthService(userRepo UserRepository, jwtHandler *utils.JWTHandler) *AuthService {
 	return &AuthService{
 		userRepo:   userRepo,
 		jwtHandler: jwtHandler,
@@ -29,30 +29,40 @@ type RegisterRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 }
 
-// Register 处理注册
-func (s *AuthService) Register(ctx context.Context, req *RegisterRequest) error {
-	// 检查用户名是否存在
-	exists, err := s.userRepo.ExistsByUsername(ctx, req.Username)
+// checkUserExists 检查用户名和邮箱是否已存在
+func (s *AuthService) checkUserExists(ctx context.Context, username, email string) error {
+	// 检查用户名
+	exists, err := s.userRepo.ExistsByUsername(ctx, username)
 	if err != nil {
-		return err
+		return fmt.Errorf("检查用户名失败: %v", err)
 	}
 	if exists {
 		return errors.New("用户名已存在")
 	}
 
-	// 检查邮箱是否存在
-	exists, err = s.userRepo.ExistsByEmail(ctx, req.Email)
+	// 检查邮箱
+	exists, err = s.userRepo.ExistsByEmail(ctx, email)
 	if err != nil {
-		return err
+		return fmt.Errorf("检查邮箱失败: %v", err)
 	}
 	if exists {
 		return errors.New("邮箱已被注册")
 	}
 
+	return nil
+}
+
+// Register 处理注册
+func (s *AuthService) Register(ctx context.Context, req *RegisterRequest) error {
+	// 检查用户是否存在
+	if err := s.checkUserExists(ctx, req.Username, req.Email); err != nil {
+		return err
+	}
+
 	// 加密密码
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
-		return err
+		return fmt.Errorf("密码加密失败: %v", err)
 	}
 
 	// 创建用户

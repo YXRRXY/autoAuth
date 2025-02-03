@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/YXRRXY/autoAuth/pkg/utils"
+	"github.com/YXRRXY/autoAuth/backend/pkg/utils"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
